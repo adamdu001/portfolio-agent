@@ -1,0 +1,57 @@
+cusip,ticker,gics_sector
+02376R102,AAL,Industrials
+013091103,ACI,Consumer Staples
+00130H105,AES,Utilities
+038222105,AMAT,Information Technology
+023135106,AMZN,Consumer Discretionary
+06849F108,B,Materials
+097023105,BA,Industrials
+060505104,BAC,Financials
+055622104,BP,Energy
+084670702,BRK/B,Financials
+172967424,C,Financials
+M22465104,CHKP,Information Technology
+14040H105,COF,Financials
+79466L302,CRM,Information Technology
+126408103,CSX,Industrials
+127097103,CTRA,Energy
+254687106,DIS,Communication Services
+036752103,ELV,Health Care
+26884L109,EQT,Energy
+31620M106,FIS,Financials
+Y2573F102,FLEX,Information Technology
+36266G107,GEHC,Health Care
+37045V100,GM,Consumer Discretionary
+02079K305,GOOGL,Communication Services
+372460105,GPC,Consumer Discretionary
+446413106,HII,Industrials
+G4705A100,ICLR,Health Care
+45337C102,INCY,Health Care
+50155Q100,KD,Information Technology
+49456B101,KMI,Energy
+844741108,LUV,Industrials
+G5960L103,MDT,Health Care
+608190104,MHK,Consumer Discretionary
+573874104,MRVL,Information Technology
+636180101,NFG,Utilities
+641069406,NSRGY,Consumer Staples
+N6596X109,NXPI,Information Technology
+690742101,OC,Industrials
+681919106,OMC,Communication Services
+68389X105,ORCL,Information Technology
+744573106,PEG,Utilities
+717081103,PFE,Health Care
+747525103,QCOM,Information Technology
+82846H405,QXO,Industrials
+75886F107,REGN,Health Care
+G8267P108,SW,Materials
+G87052109,TEL,Information Technology
+881624209,TEVA,Health Care
+883556102,TMO,Health Care
+911312106,UPS,Industrials
+92840M102,VST,Utilities
+934423104,WBD,Communication Services
+949746101,WFC,Financials
+G96629103,WTW,Financials
+98956P102,ZBH,Health Care
+CASH,USD,Cash

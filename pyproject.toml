@@ -1,0 +1,12 @@
+[project]
+name = "portfolio-agent"
+version = "0.1.0"
+description = "Deterministic data layer for a portfolio-analysis agent (WTW case study)"
+requires-python = ">=3.10"
+dependencies = ["pandas>=2.0", "openpyxl>=3.1"]
+[project.optional-dependencies]
+parquet = ["pyarrow>=14"]
+dev = ["pytest>=7"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
