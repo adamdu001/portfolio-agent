@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
-REAL_FILES = [RAW / f"h_{q}.xlsx" for q in ("2025Q4", "2026Q1", "2026Q2")]
+REAL_FILES = sorted(RAW.glob("*.xlsx"))  # any filenames; the loader reads the as-of date
 HEADER = ["Current Period", "Identifier", "Type", "Ticker", "Name", "Security Type", "Shares",
           "Price", "Weight", "∆ Shares", "∆ Weight", "Previous Quarter", "Previous Identifier",
           "Previous Shares", "Previous Weight", "Country"]
@@ -48,5 +48,5 @@ def synthetic_raw(tmp_path):
     return raw, sectors
 
 
-real = pytest.mark.skipif(not all(f.exists() for f in REAL_FILES),
+real = pytest.mark.skipif(len(REAL_FILES) < 3,
                           reason="confidential real files not in data/raw/")

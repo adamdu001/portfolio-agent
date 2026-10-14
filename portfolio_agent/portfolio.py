@@ -46,6 +46,8 @@ def build_portfolio_summary(holdings: pd.DataFrame) -> pd.DataFrame:
 
 def build_sector_weights(holdings: pd.DataFrame, ref: pd.DataFrame) -> pd.DataFrame:
     m = holdings.merge(ref[["cusip", "gics_sector"]], on="cusip", how="left", validate="m:1")
-    out = (m.groupby(["quarter", "gics_sector"], as_index=False)
-           .agg(weight_pct=("weight_pct", "sum"), n_positions=("cusip", "count")))
+    # groupby + reset_index (not as_index=False): older pandas drops keys with named agg
+    g = m.groupby(["quarter", "gics_sector"])
+    out = pd.DataFrame({"weight_pct": g["weight_pct"].sum(),
+                        "n_positions": g["cusip"].count()}).reset_index()
     return out.sort_values(["quarter", "weight_pct"], ascending=[True, False]).reset_index(drop=True)

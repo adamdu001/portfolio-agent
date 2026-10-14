@@ -36,13 +36,16 @@ def test_signals(synthetic_raw):
     h, _ = load_all(raw)
     s = build_signals(h).set_index("ticker")
     assert s.loc["AAA", "action"] == "add" and s.loc["BBB", "action"] == "hold"
-    assert s.loc["CCC", "action"] == "exit" and s.loc["CCC", "price_imputed"]
+    assert s.loc["CCC", "action"] == "exit" and pd.isna(s.loc["CCC", "active_w"])
     assert s.loc["DDD", "action"] == "initiate"
     # unchanged book at new prices: AAA 1200, BBB 900, CCC 1000 (imputed), cash 1000 -> 4100
     assert s.loc["AAA", "w_unchanged"] == pytest.approx(1200 / 4100 * 100)
-    assert s.w_unchanged.sum() == pytest.approx(100)
-    assert (s.active_w + s.passive_w - s.d_w).abs().max() < 1e-9
+    # exits are blank, so continuing rows sum to 100 minus the exit (CCC 1000/4100)
+    assert s.w_unchanged.sum() == pytest.approx(3100 / 4100 * 100)
+    cont = s[s.action.isin(("add", "trim", "hold"))]
+    assert (cont.active_w + cont.passive_w - cont.d_w).abs().max() < 1e-9
     assert s.loc["CCC", "is_material"] and not s.loc["USD", "is_material"]
+    assert pd.isna(s.loc["DDD", "active_w"])  # initiate: blank split
     strict = build_signals(h, MaterialityConfig(d_shares_pct=1000, active_w=1000, always_material=())
                            ).set_index("ticker")
     assert not strict.is_material.any()

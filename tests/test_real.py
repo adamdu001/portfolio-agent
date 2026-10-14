@@ -43,8 +43,10 @@ def test_actions(t):
 
 def test_invariants(t):
     s = t["signals"]
-    assert (s.active_w + s.passive_w - s.d_w).abs().max() < 1e-9
-    assert s.groupby("from_q").w_unchanged.sum().sub(100).abs().max() < 1e-9
+    cont = s[s.action.isin(("add", "trim", "hold"))]
+    assert (cont.active_w + cont.passive_w - cont.d_w).abs().max() < 1e-9
+    exits = s[s.action.isin(("initiate", "exit"))]
+    assert exits.active_w.isna().all() and exits.passive_w.isna().all()
     h = t["holdings"]
     assert h.groupby("quarter").weight_pct.sum().sub(100).abs().max() < 0.05
     assert h.loc[~h.is_cash, "cusip"].str.len().eq(9).all()

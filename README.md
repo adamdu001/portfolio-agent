@@ -47,10 +47,11 @@ had traded nothing and prices moved. Then
 * `active_w  = w_curr − w_unchanged` (the manager's trading decision),
 * `active_w + passive_w = d_w` exactly.
 
-Exits have no current price, so `p_prev` is used and `price_imputed=True` (assumes flat price).
+The split is only filled for continuing positions (add / trim / hold). For initiate and exit rows
+`w_unchanged`, `active_w` and `passive_w` are left blank: the label itself is the signal.
 Cash price is 1.
 
-`is_material` (configurable via `MaterialityConfig`): `|d_shares_pct| ≥ 25` or `|active_w| ≥ 0.5`
+`is_material` (configurable via `MaterialityConfig`): `|d_shares_pct| ≥ 25` or `|active_w| ≥ 0.5` percentage points
 or action ∈ {initiate, exit}; never true for cash. `streak`: number of consecutive pairs, ending
 at this one, moving in the same direction (initiate/add = up, trim/exit = down; hold → 0).
 `prev_source_row`/`curr_source_row` point back to the spreadsheet rows for citations.
@@ -66,3 +67,40 @@ at this one, moving in the same direction (initiate/add = up, trim/exit = down; 
   NSRGY (Nestlé ADR) = Consumer Staples, B (Barrick) = Materials.
 * CUSIP is the key; ticker is descriptive only.
 * Weights are taken as reported (rounded to 2 dp); w_unchanged is computed from shares × price.
+
+## Column guide (plain-English)
+
+### reconciliation — a safety check, not an analysis table
+Compares the spreadsheet's own `∆ Shares` / `Previous Shares` / `Previous Weight` columns with
+values recomputed from two consecutive files. **Empty = good**: the files are internally
+consistent and the loader read them correctly. Rows would appear on e.g. a stock split,
+ticker change or data error. It is a check on the input, not part of the agent's reasoning.
+
+### signals — one row per stock per quarter step
+| column | meaning | why we need it |
+|---|---|---|
+| `price_prev`, `price_curr` | quarter-end price in each file | needed for `w_unchanged` (old shares × new price) |
+| `w_unchanged` | weight the stock would have at the new quarter end if **nobody traded anything** | the baseline that separates trading from price drift |
+| `passive_w` | `w_unchanged − w_prev`: weight change from prices alone | stops the agent mistaking drift for a decision |
+| `active_w` | `w_curr − w_unchanged`: weight change caused by the manager's trade | "how much the move mattered" to the whole portfolio |
+| `is_material` | True if `|d_shares_pct| ≥ 25`, or `|active_w| ≥ 0.5` pp, or initiate/exit | short-lists the rows worth an analyst's attention |
+| `streak` | consecutive quarter steps moving the same way (initiate/add = up, trim/exit = down; hold resets) | tests claims like "we've been reducing for a few quarters" |
+| `prev_source_row`, `curr_source_row` | the spreadsheet rows each signal was computed from | traceability: every number the agent states must cite these |
+
+**Why initiate and exit rows have blank active/passive.** For these rows the whole change is
+obviously the manager's decision (buying from zero, or selling to zero), so splitting it adds
+nothing. Also, an exited stock does not appear in the new file, so its new price is unknown.
+One small assumption remains: when building the "nobody traded" portfolio total (the denominator
+of `w_unchanged` for continuing stocks), an exited stock is valued at its *old* price, i.e. we
+assume its price was flat. This slightly affects every continuing stock's split, usually by a
+few hundredths of a percentage point.
+
+**Materiality thresholds, stated precisely.** These are judgement-based defaults in
+`MaterialityConfig`, not derived from data:
+* `d_shares_pct` 25 means the share count changed by 25% or more (e.g. 16,495 to 12,995 is −21%,
+  so not material on this test alone).
+* `active_w` 0.5 means 0.5 **percentage points** of portfolio weight caused by trading
+  (e.g. a position going from 2.78% to 2.28% through trading alone).
+* Why 0.5: positions in this fund range from about 1.7% to 4% (average about 2.6%), so 0.5 pp is
+  roughly a fifth of a typical position.
+* Initiates and exits are always material, by label.
