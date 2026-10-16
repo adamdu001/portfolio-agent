@@ -6,6 +6,9 @@ from portfolio_agent.load import load_all, normalise_cusip, reconcile
 from portfolio_agent.signals import MaterialityConfig, build_signals, classify
 
 
+SYNTH_ALIASES = {"000000011": [], "000000022": [], "000000033": [], "000000044": []}
+
+
 def test_normalise_cusip():
     assert normalise_cusip(13091103) == "013091103"
     assert normalise_cusip("13091103") == "013091103"
@@ -53,7 +56,7 @@ def test_signals(synthetic_raw):
 
 def test_build_end_to_end(synthetic_raw, tmp_path):
     raw, sectors = synthetic_raw
-    t = build(raw, tmp_path / "out", sectors)
+    t = build(raw, tmp_path / "out", sectors, aliases=SYNTH_ALIASES)
     ps = t["portfolio_summary"].set_index("quarter")
     assert ps.loc["2025Q4", "n_positions"] == 3
     assert ps.loc["2026Q1", "names_in"] == "DDD" and ps.loc["2026Q1", "names_out"] == "CCC"

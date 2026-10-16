@@ -104,3 +104,41 @@ few hundredths of a percentage point.
 * Why 0.5: positions in this fund range from about 1.7% to 4% (average about 2.6%), so 0.5 pp is
   roughly a fifth of a typical position.
 * Initiates and exits are always material, by label.
+
+## Claims side (call transcript vs holdings)
+
+Flow: transcript → **extractor** (language model; stub for now) → `claims` table → rule-based
+checks against `signals` → `claim_checks.csv`. The model only reads and labels; every verdict
+comes from code. Run `python -m portfolio_agent.build` first, then
+`python -m portfolio_agent.check_claims`. The transcript is git-ignored (`data/transcripts/`).
+
+### claims table (one row per stock-specific action the manager states)
+| column | meaning |
+|---|---|
+| `claim_id` | stable id (C1, C2, ...) |
+| `quote` | exact words from the call; code rejects rows whose quote is not in the transcript |
+| `company` | company name as spoken (the model never outputs tickers or CUSIPs) |
+| `action` | initiate, add, hold, trim or exit |
+| `quarter`, `quarter_basis` | quarter the action happened in (`2026Q1`), and whether it was `stated` or `inferred_from_call_date` |
+| `multi_quarter`, `duration_phrase` | true when the manager says it has gone on for several quarters, with their words |
+| `rationale` | the manager's reasons, for traceability only; never used in the checks |
+
+### Matching and verdicts
+* `aliases.py` lists spoken name variants per CUSIP; they are stored in the `aliases` column of
+  `security_reference` (separated by `|`). The build fails if a security has no entry or two
+  securities share a variant. Names are matched after lowercasing and stripping punctuation and
+  suffixes such as "Inc". No fuzzy or model matching yet.
+* A claim is joined to the signals row for the same CUSIP whose `to_q` equals the claim's quarter.
+* Verdicts: `consistent`; `contradicted` (observed action differs, or no position at either end
+  of that step); `not_in_holdings` (name matches no security ever held, e.g. Kraft Heinz);
+  `partially_supported` (direction right, but `multi_quarter` claim and `streak` below
+  `ClaimCheckConfig.min_streak`, default 2; with three files the longest possible streak is 2).
+
+### Known limits
+* A stated action the extractor misses is never checked; trades the manager never mentions are
+  not flagged either.
+* Quarter-end snapshots show net change over the quarter, so "added in January" cannot be
+  separated from later trades in the same quarter.
+* Non-action commentary (risk views, themes) is out of scope.
+* Names are matched by a hand-kept alias list; a new or oddly spelled name will come back as
+  `not_in_holdings`, which a person should check.

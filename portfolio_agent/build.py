@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .aliases import ALIASES
 from .load import load_all, reconcile
 from .portfolio import build_portfolio_summary, build_sector_weights
 from .reference import DEFAULT_SECTORS, build_security_reference, load_sectors
@@ -12,9 +13,10 @@ from .signals import build_signals
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(raw_dir=ROOT / "data/raw", out_dir=ROOT / "data/processed", sectors=DEFAULT_SECTORS) -> dict:
+def build(raw_dir=ROOT / "data/raw", out_dir=ROOT / "data/processed", sectors=DEFAULT_SECTORS,
+          aliases=ALIASES) -> dict:
     holdings, file_deltas = load_all(raw_dir)
-    ref = build_security_reference(holdings, load_sectors(sectors))
+    ref = build_security_reference(holdings, load_sectors(sectors), aliases)
     tables = {
         "holdings": holdings,
         "security_reference": ref,
