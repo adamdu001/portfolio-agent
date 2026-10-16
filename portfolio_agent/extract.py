@@ -19,7 +19,9 @@ Rules:
 - Only include actions the manager states. Never infer an action from opinions or sentiment.
 - Ignore statements about no particular stock, such as general views on risk or the market.
 - "company" is the company name as spoken. Do not output tickers or identifiers.
-- "quote" must be copied exactly from the transcript.
+- "quote" must be copied character for character from the transcript: a whole sentence, or a
+  clause that starts and ends exactly where the text does. Never drop, add or reorder words
+  (for example keep "also"), and keep the original capitalisation.
 - "rationale" summarises the manager's reasons for that stock in one sentence, using only what
   they said. Follow-on sentences that clearly refer back to the stock count as its reasons.
 - "quarter" is the quarter the action happened in. If the manager states a time within this

@@ -142,3 +142,14 @@ comes from code. Run `python -m portfolio_agent.build` first, then
 * Non-action commentary (risk views, themes) is out of scope.
 * Names are matched by a hand-kept alias list; a new or oddly spelled name will come back as
   `not_in_holdings`, which a person should check.
+
+### Running the real extractor
+Put `OPENAI_API_KEY=...` in a git-ignored `.env` in the repo root (see `.env.example`); the model
+defaults to `gpt-4o` (override with `OPENAI_MODEL`). `python -m portfolio_agent.check_claims`
+uses it; `--extractor stub` uses fixed rows. `python -m portfolio_agent.consistency --runs 5
+--temperature 1` repeats the extraction and reports how often each row appears.
+
+Observed on the case excerpt: `gpt-4o` returned the same four rows in 5/5 runs at temperature 0
+and at 1. `gpt-4o-mini` repeatedly dropped the word "also" from the Boeing quote, so the
+verbatim-quote check rejected that row and the claim was lost. That is why quote validation
+exists, and why a missed claim is a listed limitation.

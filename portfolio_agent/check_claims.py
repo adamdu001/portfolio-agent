@@ -1,7 +1,7 @@
 """CLI: python -m portfolio_agent.check_claims [--transcript data/transcripts/q1_2026_call.txt]
 
 Reads the processed tables written by `portfolio_agent.build`, extracts claims from the transcript
-(stub extractor until a real model is plugged in), and writes data/processed/claim_checks.csv.
+(OpenAI by default; `--extractor stub` uses fixed rows), and writes data/processed/claim_checks.csv.
 """
 from __future__ import annotations
 
@@ -33,8 +33,14 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--transcript", default=ROOT / "data/transcripts/q1_2026_call.txt", type=Path)
     ap.add_argument("--processed", default=ROOT / "data/processed", type=Path)
+    ap.add_argument("--extractor", choices=["stub", "openai"], default="openai")
     a = ap.parse_args(argv)
-    checks, rejected = run(a.transcript, a.processed)
+    if a.extractor == "openai":
+        from .llm import openai_extractor
+        extractor = openai_extractor()
+    else:
+        extractor = stub_extractor
+    checks, rejected = run(a.transcript, a.processed, extractor)
     print(checks[["claim_id", "company", "action", "quarter", "verdict", "reason"]].to_string(index=False))
     if len(rejected):
         print(f"\n{len(rejected)} model row(s) rejected:\n{rejected[['company', 'problems']].to_string(index=False)}")
