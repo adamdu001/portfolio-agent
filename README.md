@@ -153,3 +153,14 @@ Observed on the case excerpt: `gpt-4o` returned the same four rows in 5/5 runs a
 and at 1. `gpt-4o-mini` repeatedly dropped the word "also" from the Boeing quote, so the
 verbatim-quote check rejected that row and the claim was lost. That is why quote validation
 exists, and why a missed claim is a listed limitation.
+
+### Sector concentration and tilts
+* `portfolio_summary` now also has `n_sectors`, `sector_hhi`, `top_sector`, `top_sector_weight`,
+  `sectors_in`, `sectors_out`. `sector_hhi` = 10000 · Σ (sector share of non-cash weight)², the same
+  formula as the stock HHI. With the 11 GICS sectors its floor is 10000/11 ≈ 909 (perfectly even)
+  and its ceiling is 10000 (one sector). It says how concentrated the fund is across sectors, not
+  which sector is responsible.
+* `sector_weights` has one row per quarter and sector (cash included as its own row), with
+  `d_weight_pp` (change in percentage points since the previous quarter; a sector absent in a
+  quarter counts as 0%) and `is_tilt` (`|d_weight_pp| >= SectorConfig.min_shift_pp`, default 3.0, a
+  tunable default; never true for cash). Sectors exited entirely stay visible with weight 0.

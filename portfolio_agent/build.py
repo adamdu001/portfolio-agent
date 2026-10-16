@@ -21,7 +21,7 @@ def build(raw_dir=ROOT / "data/raw", out_dir=ROOT / "data/processed", sectors=DE
         "holdings": holdings,
         "security_reference": ref,
         "signals": build_signals(holdings),
-        "portfolio_summary": build_portfolio_summary(holdings),
+        "portfolio_summary": build_portfolio_summary(holdings, ref),
         "sector_weights": build_sector_weights(holdings, ref),
         "reconciliation": reconcile(holdings, file_deltas),
     }
