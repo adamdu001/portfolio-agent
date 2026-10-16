@@ -164,3 +164,11 @@ exists, and why a missed claim is a listed limitation.
   `d_weight_pp` (change in percentage points since the previous quarter; a sector absent in a
   quarter counts as 0%) and `is_tilt` (`|d_weight_pp| >= SectorConfig.min_shift_pp`, default 3.0, a
   tunable default; never true for cash). Sectors exited entirely stay visible with weight 0.
+
+## Report (no model)
+
+`python -m portfolio_agent.report` reads the processed tables and writes `data/processed/flags.json` and `report.md`.
+Claim inconsistencies are the `claim_checks` rows whose verdict is not `consistent`; stock flags are the `is_material`
+rows of `signals`; sector flags are the `is_tilt` rows of `sector_weights`, with the per-quarter sector HHI alongside.
+Each item has an id, all its source numbers and a template-written `summary`. The report states evidence only: no
+questions, no recommendations, no reasons for the manager's actions.
