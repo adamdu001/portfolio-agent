@@ -9,13 +9,13 @@ not a model's story about what the manager meant.
 ```mermaid
 flowchart TD
     H["Quarterly holdings files<br/>(3 quarters)"] --> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
-    A --> B["Detect changes<br/>buy, sell, new or exit;<br/>split into active trading vs price drift;<br/>mark material changes"]
-    A --> C["Measure portfolio shape<br/>concentration and sector weights;<br/>mark large sector shifts"]
+    A --> B["Detect changes per stock<br/>label each as <b>initiate</b>, <b>add</b>, <b>hold</b>, <b>trim</b> or <b>exit</b>;<br/>split weight change into <b>active</b> (trading) and <b>passive</b> (price drift);<br/>mark <b>material</b> changes:<br/>entry or exit, shares change 25% or more,<br/>or active weight change 0.5 points or more"]
+    A --> C["Measure portfolio shape<br/>stock and sector concentration (HHI);<br/>mark <b>sector tilts</b>:<br/>sector weight change 3 points or more"]
     T["Manager call transcript"] --> X["Language model reads the text<br/>and lists each stock-specific action<br/>with a verbatim quote<br/>(the only non-deterministic step)"]
     X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
     V -->|fails| R["Rejected claims log"]
     V -->|passes| M["Match company names<br/>to securities in the holdings"]
-    M --> D["Compare each claim with the<br/>observed change using fixed rules<br/>consistent, contradicted,<br/>partly supported, not held"]
+    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b> (right direction, but the streak is<br/>shorter than the 2 quarters that 'a few quarters' is read as)<br/>or <b>not in holdings</b> (company never held)"]
     B --> D
     B --> F["Collect flags with their evidence<br/>and row references"]
     C --> F
@@ -37,7 +37,7 @@ Claims go through `verdicts.py`: consistent, contradicted, partially supported (
 
 The report (`report.md`, written by `python -m portfolio_agent.run` with a matching `flags.json`) has three parts, matching the case objectives: claims that do not match the holdings, material stock changes, and sector flags (Health Care +6.98 points in Q1; sector HHI 1318, 1349, 1416).
 
-Take Qualcomm. The manager says "we added Qualcomm in January" (paragraph 3, characters 433–462). Holdings show 16,495 shares at December, 12,995 at March: a 21% trim, weight 2.78% to 1.70% (rows 32 and 31). Verdict: contradicted. The analyst sees the quote, the numbers, the rule-written reason and the rows. The agent does not say why. One honest caveat: March and December snapshots cannot show January buying followed by heavier selling. June shows 13,975 shares, a genuine add. The analyst can ask about timing. In the same report, Boeing (initiate) and Warner Bros. Discovery (exit) are consistent, and Kraft Heinz is in no file at all.
+Take Qualcomm. The signal comes from `signals.py` and the verdict from `verdicts.py`. The manager says "we added Qualcomm in January" (paragraph 3, characters 433–462). Holdings show 16,495 shares at December, 12,995 at March: a 21% trim, weight 2.78% to 1.70% (rows 32 and 31). Verdict: contradicted. The analyst sees the quote, the numbers, the rule-written reason and the rows. The agent does not say why. One honest caveat: March and December snapshots cannot show January buying followed by heavier selling. June shows 13,975 shares, a genuine add. The analyst can ask about timing. In the same report, Boeing (initiate) and Warner Bros. Discovery (exit) are consistent, and Kraft Heinz is in no file at all.
 
 ## 6. Build priority
 
