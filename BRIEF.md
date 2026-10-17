@@ -1,22 +1,26 @@
-# Stonebridge Value Partners: portfolio change agent
+# Stonebridge Value Partners Case Study
 
-My approach is an agent where a language model only reads the transcript and code does every calculation, comparison and verdict. The analyst gets evidence with row-level references, not a model's story about what the manager meant. Code is in the [repo](https://github.com/adamdu001/portfolio-agent).
+At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. Specifically, my design is: code does every calculation, comparison and verdict (evidence is rule-based), and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get
+
+not a model's story about what the manager meant. 
+ 
+ Code is in this [Github Repo](https://github.com/adamdu001/portfolio-agent).
 
 ```mermaid
 flowchart TD
-    H[3 holdings xlsx] --> L[load.py, reference.py<br/>holdings + security reference]
-    L --> S[signals.py<br/>per stock per quarter pair:<br/>action, active vs passive, streak, is_material]
-    L --> P[portfolio.py<br/>HHI, sector weights, is_tilt]
-    T[Call transcript] --> X[LLM extraction, extract.py<br/>the only non-deterministic step]
-    X --> V[claims.py validation<br/>verbatim quote, valid labels]
-    V -->|fails| R[claims_rejected.csv]
-    V -->|passes| M[matching.py<br/>name to CUSIP via alias list]
-    M --> D[verdicts.py<br/>rules compare claim with signals]
-    S --> D
-    S --> F[flags.py -> flags.json]
-    P --> F
+    H["Quarterly holdings files<br/>(3 quarters)"] --> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
+    A --> B["Detect changes<br/>buy, sell, new or exit;<br/>split into active trading vs price drift;<br/>mark material changes"]
+    A --> C["Measure portfolio shape<br/>concentration and sector weights;<br/>mark large sector shifts"]
+    T["Manager call transcript"] --> X["Language model reads the text<br/>and lists each stock-specific action<br/>with a verbatim quote<br/>(the only non-deterministic step)"]
+    X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
+    V -->|fails| R["Rejected claims log"]
+    V -->|passes| M["Match company names<br/>to securities in the holdings"]
+    M --> D["Compare each claim with the<br/>observed change using fixed rules<br/>consistent, contradicted,<br/>partly supported, not held"]
+    B --> D
+    B --> F["Collect flags with their evidence<br/>and row references"]
+    C --> F
     D --> F
-    F --> O[render.py -> report.md]
+    F --> O["Write the report<br/>from templates, no model"]
 ```
 
 ## 3. Data model
