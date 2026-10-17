@@ -4,19 +4,19 @@ At high level, my first principle for designing such system is to maximise deter
 
 ```mermaid
 flowchart TD
-    H["Quarterly holdings files<br/>(3 quarters)"] --> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector<br/><i>→ holdings.csv, security_reference.csv,<br/>reconciliation.csv</i>"]
-    A --> B["Detect changes per stock<br/>label each as <b>initiate</b>, <b>add</b>, <b>hold</b>, <b>trim</b> or <b>exit</b>;<br/>split weight change into <b>active</b> (trading) and <b>passive</b> (price drift);<br/>mark <b>material</b> changes:<br/>entry or exit, shares change 25% or more,<br/>or active weight change 0.5 points or more<br/><i>→ signals.csv</i>"]
-    A --> C["Measure portfolio shape<br/>stock and sector concentration (HHI);<br/>mark <b>sector tilts</b>:<br/>sector weight change 3 points or more<br/><i>→ portfolio_summary.csv, sector_weights.csv</i>"]
+    H["Quarterly holdings files<br/>(3 quarters)"] --> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
+    A --> B["Detect changes per stock<br/>label each as <b>initiate</b>, <b>add</b>, <b>hold</b>, <b>trim</b> or <b>exit</b>;<br/>split weight change into <b>active</b> (trading) and <b>passive</b> (price drift);<br/>mark <b>material</b> changes:<br/>entry or exit, shares change 25% or more,<br/>or active weight change 0.5 points or more"]
+    A --> C["Measure portfolio shape<br/>stock and sector concentration (HHI);<br/>mark <b>sector tilts</b>:<br/>sector weight change 3 points or more"]
     T["Manager call transcript"] --> X["Language model reads the text<br/>and lists each stock-specific action<br/>with a verbatim quote<br/>(the only non-deterministic step)"]
-    X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid<br/><i>→ claims table</i>"]
-    V -->|fails| R["Rejected claims log<br/><i>→ claims_rejected.csv</i>"]
+    X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
+    V -->|fails| R["Rejected claims log"]
     V -->|passes| M["Match company names<br/>to securities in the holdings"]
-    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>, or <b>not in holdings</b><br/><i>→ claim_checks.csv</i>"]
+    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>, or <b>not in holdings</b>"]
     B --> D
-    B --> F["Collect flags with their evidence<br/>and row references<br/><i>→ flags.json</i>"]
+    B --> F["Collect flags with their evidence<br/>and row references"]
     C --> F
     D --> F
-    F --> O["Write the report<br/>from templates, no model<br/><i>→ report.md</i>"]
+    F --> O["Write the report<br/>from templates, no model"]
 ```
 
 | Step | Script (`portfolio_agent/`) | Output (`data/processed/`) |
