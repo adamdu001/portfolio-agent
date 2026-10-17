@@ -178,3 +178,9 @@ questions, no recommendations, no reasons for the manager's actions.
 The claims table adds `source_id` (the transcript file name), `offsets` (start-end character positions), `paragraphs`
 (1-based, non-empty lines) and `quote_multiple_occurrences`. Code fills these by searching the transcript for the quote.
 If the quote occurs more than once, every match is listed (joined with `;`) and the flag is true.
+
+## Running everything
+
+`python -m portfolio_agent.run` builds the tables, extracts and checks claims (OpenAI by default; `--extractor stub`
+uses fixed rows; `--skip-claims` omits the claims step) and writes `flags.json` and `report.md` to `data/processed/`.
+Rejected model claims are saved to `claims_rejected.csv`.
