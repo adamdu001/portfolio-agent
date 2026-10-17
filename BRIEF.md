@@ -19,17 +19,17 @@ flowchart TD
     F --> O["Write the report<br/>from templates, no model"]
 ```
 
-| Step | Script (`portfolio_agent/`) | Output (`data/processed/`) |
-|---|---|---|
-| Clean and standardise holdings | `load.py`, `reference.py`, `aliases.py` | `holdings.csv`, `security_reference.csv`, `reconciliation.csv` |
-| Detect changes per stock | `signals.py` | `signals.csv` |
-| Measure portfolio shape | `portfolio.py` | `portfolio_summary.csv`, `sector_weights.csv` |
-| Read the transcript (model) | `extract.py`, `llm.py` | none (claims passed to the next step) |
-| Check the model's output | `claims.py` | `claims_rejected.csv` (the rejects) |
-| Match company names | `matching.py` | none (adds the CUSIP to each claim) |
-| Compare claims with changes | `verdicts.py` | `claim_checks.csv` |
-| Collect flags and write the report | `flags.py`, `render.py`, `report.py` | `flags.json`, `report.md` |
-| Run everything end to end | `run.py` | all of the above |
+| # | Step | Script (`portfolio_agent/`) | Output (`data/processed/`) |
+|---|---|---|---|
+| 1 | Clean and standardise holdings | `load.py`, `reference.py`, `aliases.py` | `holdings.csv`, `security_reference.csv`, `reconciliation.csv` |
+| 2 | Detect changes per stock | `signals.py` | `signals.csv` |
+| 3 | Measure portfolio shape | `portfolio.py` | `portfolio_summary.csv`, `sector_weights.csv` |
+| 4 | Read the transcript (model) | `extract.py`, `llm.py` | none (claims passed to the next step) |
+| 5 | Check the model's output | `claims.py` | `claims_rejected.csv` (the rejects) |
+| 6 | Match company names | `matching.py` | none (adds the CUSIP to each claim) |
+| 7 | Compare claims with changes | `verdicts.py` | `claim_checks.csv` |
+| 8 | Collect flags and write the report | `flags.py`, `render.py`, `report.py` | `flags.json`, `report.md` |
+| 9 | Run everything end to end | `run.py` | all of the above |
 
 ## 3. Data model
 
