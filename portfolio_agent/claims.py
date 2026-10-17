@@ -37,6 +37,25 @@ def _squash(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def locate_quote(quote: str, transcript: str) -> List[Dict]:
+    """Every place the quote occurs (whitespace-insensitive): start/end character offsets and the
+    1-based number of the paragraph (non-empty line) where it starts."""
+    words = quote.split()
+    if not words:
+        return []
+    pattern = re.compile(r"\s+".join(re.escape(w) for w in words))
+    spans = [m.span() for m in pattern.finditer(transcript)]
+    bounds, pos, k = [], 0, 0
+    for line in transcript.splitlines(keepends=True):
+        if line.strip():
+            k += 1
+            bounds.append((pos, pos + len(line), k))
+        pos += len(line)
+    def para_of(off):
+        return next((k for a, b, k in bounds if a <= off < b), None)
+    return [{"start": a, "end": b, "paragraph": para_of(a)} for a, b in spans]
+
+
 def validate_claim(row: Dict, transcript: str) -> List[str]:
     """Return a list of problems with one model-produced claim (empty list = valid)."""
     errs = []
@@ -62,12 +81,24 @@ def validate_claim(row: Dict, transcript: str) -> List[str]:
     return errs
 
 
-def build_claims_table(rows: List[Dict], transcript: str):
-    """Validate model rows. Returns (valid claims DataFrame, rejected DataFrame with reasons)."""
+LOCATION_COLUMNS = ["offsets", "paragraphs", "quote_multiple_occurrences"]
+
+
+def build_claims_table(rows: List[Dict], transcript: str, source_id: str = "transcript"):
+    """Validate model rows. Returns (valid claims DataFrame, rejected DataFrame with reasons).
+
+    Code (not the model) adds source_id and the quote locations. `offsets` ("start-end") and
+    `paragraphs` hold every match joined with ';' so each occurrence stays traceable;
+    quote_multiple_occurrences is True when the quote appears more than once."""
     good, bad = [], []
     for row in rows:
         errs = validate_claim(row, transcript)
         (bad if errs else good).append({**row, "problems": "; ".join(errs)} if errs else dict(row))
     claims = pd.DataFrame(good, columns=COLUMNS[1:]).reset_index(drop=True)
+    locs = [locate_quote(q, transcript) for q in claims.quote]
+    claims["offsets"] = [";".join(f"{m['start']}-{m['end']}" for m in L) for L in locs]
+    claims["paragraphs"] = [";".join(str(m["paragraph"]) for m in L) for L in locs]
+    claims["quote_multiple_occurrences"] = [len(L) > 1 for L in locs]
     claims.insert(0, "claim_id", [f"C{i + 1}" for i in range(len(claims))])
+    claims.insert(1, "source_id", source_id)
     return claims, pd.DataFrame(bad)

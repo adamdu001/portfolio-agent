@@ -23,7 +23,7 @@ def run(transcript_path, processed_dir=ROOT / "data/processed", extractor: Extra
     processed = Path(processed_dir)
     ref = pd.read_csv(processed / "security_reference.csv", dtype=str)
     sig = pd.read_csv(processed / "signals.csv", dtype={"cusip": str})
-    claims, rejected = build_claims_table(extractor(transcript), transcript)
+    claims, rejected = build_claims_table(extractor(transcript), transcript, Path(transcript_path).stem)
     checks = check_claims(claims, ref, sig, cfg)
     checks.to_csv(processed / "claim_checks.csv", index=False)
     return checks, rejected

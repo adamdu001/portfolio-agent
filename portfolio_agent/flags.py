@@ -109,8 +109,8 @@ def concentration(portfolio_summary: pd.DataFrame) -> List[Dict[str, Any]]:
 
 
 # ---- claim inconsistencies ---------------------------------------------------------------
-CLAIM_COLS = ["claim_id", "company", "ticker", "quote", "action", "quarter", "quarter_basis",
-              "multi_quarter", "duration_phrase", "verdict", "reason", "observed_action", "from_q",
+CLAIM_COLS = ["claim_id", "source_id", "company", "ticker", "quote", "action", "quarter", "quarter_basis",
+              "multi_quarter", "duration_phrase", "quote_multiple_occurrences", "verdict", "reason", "observed_action", "from_q",
               "to_q", "shares_prev", "shares_curr", "d_shares_pct", "active_w", "streak",
               "prev_source_row", "curr_source_row"]
 
@@ -121,6 +121,9 @@ def claim_flags(claim_checks: Optional[pd.DataFrame]) -> List[Dict[str, Any]]:
     out = []
     for _, r in claim_checks[claim_checks.verdict != "consistent"].iterrows():
         rec = {"id": f"CL-{r.claim_id}", **_rec(r, CLAIM_COLS)}
+        rec["quote_locations"] = [
+            {"offset": o, "paragraph": int(p)} for o, p in
+            zip(str(r.offsets).split(";"), str(r.paragraphs).split(";")) if o]
         rec["summary"] = f"{r.company}: the manager said {r.action} ({r.quarter}). {r.reason}"
         out.append(rec)
     return out

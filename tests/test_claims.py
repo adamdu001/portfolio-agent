@@ -6,7 +6,7 @@ import pytest
 from conftest import REAL_FILES, RAW, ROOT
 from portfolio_agent.aliases import ALIASES, normalise_name
 from portfolio_agent.build import build
-from portfolio_agent.claims import build_claims_table, validate_claim
+from portfolio_agent.claims import build_claims_table, locate_quote, validate_claim
 from portfolio_agent.extract import STUB_ROWS, render_prompt, stub_extractor
 from portfolio_agent.matching import resolve_company
 from portfolio_agent.reference import build_security_reference
@@ -115,3 +115,19 @@ def test_real_case_study_claims(tmp_path):
     assert out.loc["Qualcomm", "verdict"] == "contradicted"      # holdings show a trim into 2026Q1
     assert out.loc["Boeing", "verdict"] == "consistent"
     assert out.loc["Warner Bros. Discovery", "verdict"] == "consistent"
+
+
+def test_quote_locations():
+    text = "First para.\n\nWe bought more AAA.\nWe trimmed BBB. Then\nwe trimmed BBB again.\nWe bought more AAA."
+    one = locate_quote("We trimmed BBB.", text)
+    assert [(m["start"], m["end"], m["paragraph"]) for m in one] == [(text.index("We trimmed"), text.index("We trimmed") + 15, 3)]
+    two = locate_quote("We bought more AAA.", text)
+    assert len(two) == 2 and [m["paragraph"] for m in two] == [2, 5]
+    assert all(text[m["start"]:m["end"]] == "We bought more AAA." for m in two)
+    assert locate_quote("never said", text) == []
+    rows = [claim("AAA", "add", "We bought more AAA."), claim("BBB", "trim", "We trimmed BBB.")]
+    claims, rej = build_claims_table(rows, text, "call_x")
+    assert rej.empty and claims.source_id.tolist() == ["call_x", "call_x"]
+    assert claims.quote_multiple_occurrences.tolist() == [True, False]
+    assert claims.paragraphs.tolist() == ["2;5", "3"]
+    assert claims.offsets[0].count(";") == 1 and ";" not in claims.offsets[1]

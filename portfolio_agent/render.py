@@ -37,7 +37,11 @@ def render_markdown(flags: Dict[str, Any]) -> str:
                  "are not consistent.")
         for c in flags["claim_inconsistencies"]:
             L += ["", f"**{c['id']} · {c['company']}** — verdict: `{c['verdict']}`", "",
-                  f"> {c['quote']}", "", c["reason"]]
+                  f"> {c['quote']}", "",
+                  "Source: " + c["source_id"] + ", " + "; ".join(
+                      f"paragraph {x['paragraph']} (characters {x['offset']})" for x in c["quote_locations"])
+                  + (" (quote occurs more than once)" if c["quote_multiple_occurrences"] else "") + ".",
+                  "", c["reason"]]
             if c["observed_action"]:
                 L.append(f"Evidence: shares {c['shares_prev']:,.0f} → {c['shares_curr']:,.0f}, "
                          f"trading effect {_fmt(c['active_w'], signed=True)} pp, source rows "

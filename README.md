@@ -172,3 +172,9 @@ Claim inconsistencies are the `claim_checks` rows whose verdict is not `consiste
 rows of `signals`; sector flags are the `is_tilt` rows of `sector_weights`, with the per-quarter sector HHI alongside.
 Each item has an id, all its source numbers and a template-written `summary`. The report states evidence only: no
 questions, no recommendations, no reasons for the manager's actions.
+
+## Tracing a claim back to the transcript
+
+The claims table adds `source_id` (the transcript file name), `offsets` (start-end character positions), `paragraphs`
+(1-based, non-empty lines) and `quote_multiple_occurrences`. Code fills these by searching the transcript for the quote.
+If the quote occurs more than once, every match is listed (joined with `;`) and the flag is true.
