@@ -1,10 +1,6 @@
 # Stonebridge Value Partners Case Study
 
-At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. Specifically, my design is: code does every calculation, comparison and verdict (evidence is rule-based), and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get
-
-not a model's story about what the manager meant. 
- 
- Code is in this [Github Repo](https://github.com/adamdu001/portfolio-agent).
+At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. Specifically my design is: code does every calculation, comparison and verdict, and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get traceable report of inconsistencies (between call scripts and holding) and flagged holding changes at stock and sector level. I will go through the workflow-design using the flowchart below. The system code is in this [Github Repo](https://github.com/adamdu001/portfolio-agent), feel free to have a look and run it.
 
 ```mermaid
 flowchart TD
@@ -15,13 +11,25 @@ flowchart TD
     X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
     V -->|fails| R["Rejected claims log"]
     V -->|passes| M["Match company names<br/>to securities in the holdings"]
-    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b> (right direction, but the streak is<br/>shorter than the 2 quarters that 'a few quarters' is read as)<br/>or <b>not in holdings</b> (company never held)"]
+    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>, or <b>not in holdings</b>"]
     B --> D
     B --> F["Collect flags with their evidence<br/>and row references"]
     C --> F
     D --> F
     F --> O["Write the report<br/>from templates, no model"]
 ```
+
+| Step | Script (`portfolio_agent/`) |
+|---|---|
+| Clean and standardise holdings | `load.py`, `reference.py`, `aliases.py` |
+| Detect changes per stock | `signals.py` |
+| Measure portfolio shape | `portfolio.py` |
+| Read the transcript (model) | `extract.py`, `llm.py` |
+| Check the model's output | `claims.py` |
+| Match company names | `matching.py` |
+| Compare claims with changes | `verdicts.py` |
+| Collect flags and write the report | `flags.py`, `render.py`, `report.py` |
+| Run everything end to end | `run.py` |
 
 ## 3. Data model
 
