@@ -1,6 +1,9 @@
-# Stonebridge Value Partners Case Study
+# Stonebridge Case Study -- Anbang Du
+At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. Specifically my design is: code does every calculation, comparison and verdict, and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get traceable report of inconsistencies (between call scripts and holding) and flagged holding changes at stock and sector level. 
 
-At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. Specifically my design is: code does every calculation, comparison and verdict, and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get traceable report of inconsistencies (between call scripts and holding) and flagged holding changes at stock and sector level. I will go through the workflow-design using the flowchart below. The system code is in this [Github Repo](https://github.com/adamdu001/portfolio-agent), feel free to have a look and run it.
+The workflow is shown in the flowchart below and summarised in the table further down. I will explain each step in the next section. The system code and outputs are in this [Github Repo](https://github.com/adamdu001/portfolio-agent). Please feel free to inspect and run it.
+
+# Workflow Deign
 
 ```mermaid
 flowchart TD
@@ -19,6 +22,13 @@ flowchart TD
     F --> O["Write the report<br/>from templates, no model"]
 ```
 
+
+
+
+For each stock and quarter pair, `signals.py` classifies the action (initiate, add, hold, trim, exit) and splits the weight change. Weight at old shares and new prices is the unchanged weight. The gap to the new weight is active, and the gap from the old weight is passive. Initiates and exits have no such split. A change is material if it is an entry or exit, moves shares by 25% or more, or moves weight by 0.5 points or more through trading. A streak counts consecutive quarters in one direction. `portfolio.py` adds stock and sector concentration (HHI) and flags sectors that moved 3 points or more.
+
+Claims go through `verdicts.py`: consistent, contradicted, partially supported (direction right, streak shorter than the "few quarters" claimed, which I read as two) or not in holdings. A stock the manager names that is never held counts as a discrepancy. The model never judges whether a claim is true.
+
 | # | Step | Script (`portfolio_agent/`) | Output (`data/processed/`) |
 |---|---|---|---|
 | 1 | Clean and standardise holdings | `load.py`, `reference.py`, `aliases.py` | `holdings.csv`, `security_reference.csv`, `reconciliation.csv` |
@@ -31,15 +41,11 @@ flowchart TD
 | 8 | Collect flags and write the report | `flags.py`, `render.py`, `report.py` | `flags.json`, `report.md` |
 | 9 | Run everything end to end | `run.py` | all of the above |
 
-## 3. Data model
 
 Three linked tables. **Holdings**: one row per CUSIP, quarter and position, with shares, price, weight and the source row in the Excel file. CUSIP is the key, zero-padded to nine characters, because the files lose leading zeros and tickers change. **Security reference**: CUSIP, ticker, name, a hand-assigned GICS sector and an `aliases` column of spoken name variants. **Claims**: one row per stock-specific action the manager states, with the verbatim quote, `source_id`, character offsets, paragraph numbers, action, quarter, `multi_quarter` and a short rationale. Each claim is a single action in a single period. Reasoning stays as context. Claims join to holdings through the CUSIP that the alias list resolves.
 
-## 4. Core analytical logic
 
-For each stock and quarter pair, `signals.py` classifies the action (initiate, add, hold, trim, exit) and splits the weight change. Weight at old shares and new prices is the unchanged weight. The gap to the new weight is active, and the gap from the old weight is passive. Initiates and exits have no such split. A change is material if it is an entry or exit, moves shares by 25% or more, or moves weight by 0.5 points or more through trading. A streak counts consecutive quarters in one direction. `portfolio.py` adds stock and sector concentration (HHI) and flags sectors that moved 3 points or more.
 
-Claims go through `verdicts.py`: consistent, contradicted, partially supported (direction right, streak shorter than the "few quarters" claimed, which I read as two) or not in holdings. A stock the manager names that is never held counts as a discrepancy. The model never judges whether a claim is true.
 
 ## 5. Worked example
 
