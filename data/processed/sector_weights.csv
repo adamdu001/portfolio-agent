@@ -1,0 +1,34 @@
+quarter,gics_sector,weight_pct,n_positions,d_weight_pp,is_tilt
+2025Q4,Financials,18.009999999999998,7,,False
+2025Q4,Information Technology,17.07,7,,False
+2025Q4,Health Care,15.3,5,,False
+2025Q4,Industrials,9.74,4,,False
+2025Q4,Energy,9.68,4,,False
+2025Q4,Communication Services,7.239999999999999,3,,False
+2025Q4,Utilities,6.140000000000001,2,,False
+2025Q4,Cash,5.45,1,,False
+2025Q4,Consumer Staples,5.09,2,,False
+2025Q4,Consumer Discretionary,4.539999999999999,2,,False
+2025Q4,Materials,1.74,1,,False
+2026Q1,Health Care,22.28,8,6.98,True
+2026Q1,Information Technology,13.740000000000002,6,-3.3299999999999983,True
+2026Q1,Industrials,13.590000000000002,6,3.8500000000000014,True
+2026Q1,Financials,10.64,4,-7.369999999999997,True
+2026Q1,Energy,9.41,4,-0.2699999999999996,False
+2026Q1,Communication Services,7.09,3,-0.14999999999999947,False
+2026Q1,Consumer Discretionary,6.760000000000001,3,2.2200000000000015,False
+2026Q1,Cash,5.13,1,-0.3200000000000003,False
+2026Q1,Utilities,4.74,2,-1.4000000000000004,False
+2026Q1,Consumer Staples,4.38,2,-0.71,False
+2026Q1,Materials,2.24,1,0.5000000000000002,False
+2026Q2,Health Care,22.08,9,-0.20000000000000284,False
+2026Q2,Industrials,18.990000000000002,7,5.4,True
+2026Q2,Information Technology,10.620000000000001,5,-3.120000000000001,True
+2026Q2,Financials,10.319999999999999,4,-0.32000000000000206,False
+2026Q2,Consumer Discretionary,8.86,4,2.0999999999999988,False
+2026Q2,Communication Services,7.3500000000000005,3,0.2600000000000007,False
+2026Q2,Utilities,6.92,3,2.1799999999999997,False
+2026Q2,Energy,4.91,2,-4.5,True
+2026Q2,Cash,4.72,1,-0.41000000000000014,False
+2026Q2,Materials,2.96,1,0.7199999999999998,False
+2026Q2,Consumer Staples,2.28,1,-2.1,False

@@ -1,0 +1,57 @@
+cusip,ticker,name,gics_sector,aliases
+02376R102,AAL,American Airlines Group Inc,Industrials,american airlines group|aal|american airlines
+013091103,ACI,Albertsons Companies Inc,Consumer Staples,albertsons companies|aci|albertsons
+00130H105,AES,Aes Corp,Utilities,aes
+038222105,AMAT,Applied Materials Inc,Information Technology,applied materials|amat
+023135106,AMZN,Amazon Com Inc,Consumer Discretionary,amazon com|amzn|amazon
+06849F108,B,Barrick Mining Corporation,Materials,barrick mining|barrick|barrick gold
+097023105,BA,Boeing Co,Industrials,boeing
+060505104,BAC,Bank of America Corporation,Financials,bank of america|bac|bofa
+055622104,BP,Bp,Energy,bp|british petroleum
+084670702,BRK/B,Berkshire Hathaway Inc,Financials,berkshire hathaway|brk b|berkshire
+172967424,C,Citigroup Inc,Financials,citigroup|citi
+M22465104,CHKP,Check Point Software Technologies,Information Technology,check point software technologies|chkp|check point|checkpoint
+14040H105,COF,Capital One Financial Corp,Financials,capital one financial|cof|capital one
+79466L302,CRM,Salesforce Inc,Information Technology,salesforce|crm
+126408103,CSX,Csx Corp,Industrials,csx
+127097103,CTRA,Coterra Energy Inc,Energy,coterra energy|ctra|coterra
+254687106,DIS,Walt Disney Company (the),Communication Services,walt disney|dis|disney
+036752103,ELV,Elevance Health Inc,Health Care,elevance health|elv|elevance|anthem
+26884L109,EQT,EQT Corporation,Energy,eqt
+31620M106,FIS,Fidelity Natl Information Services,Financials,fidelity natl information services|fis|fidelity national information services
+Y2573F102,FLEX,Flex Ltd,Information Technology,flex
+36266G107,GEHC,Ge Healthcare Technologies Inc,Health Care,ge healthcare technologies|gehc|ge healthcare
+37045V100,GM,General Motors Co,Consumer Discretionary,general motors|gm
+02079K305,GOOGL,Alphabet Inc,Communication Services,alphabet|googl|google
+372460105,GPC,Genuine Parts Co,Consumer Discretionary,genuine parts|gpc
+446413106,HII,Huntington Ingalls Industries,Industrials,huntington ingalls industries|hii|huntington ingalls
+G4705A100,ICLR,ICON Plc,Health Care,icon|iclr
+45337C102,INCY,Incyte Corporation,Health Care,incyte|incy
+50155Q100,KD,Kyndryl Hldgs Inc,Information Technology,kyndryl
+49456B101,KMI,Kinder Morgan Inc,Energy,kinder morgan|kmi
+844741108,LUV,Southwest Airlines Co,Industrials,southwest airlines|luv|southwest
+G5960L103,MDT,Medtronic Plc,Health Care,medtronic|mdt
+608190104,MHK,Mohawk Industries,Consumer Discretionary,mohawk industries|mhk|mohawk
+573874104,MRVL,Marvell Technology Inc,Information Technology,marvell technology|mrvl|marvell
+636180101,NFG,National Fuel Gas Co,Utilities,national fuel gas|nfg|national fuel
+641069406,NSRGY,Nestle Sa,Consumer Staples,nestle|nsrgy
+N6596X109,NXPI,Nxp Semiconductors N V,Information Technology,nxp semiconductors n v|nxpi|nxp semiconductors|nxp
+690742101,OC,Owens Corning,Industrials,owens corning
+681919106,OMC,Omnicom Group Inc,Communication Services,omnicom group|omc|omnicom
+68389X105,ORCL,Oracle Corp,Information Technology,oracle|orcl
+744573106,PEG,Public Service Enterprise Group Inc,Utilities,public service enterprise group|peg|pseg
+717081103,PFE,Pfizer Inc,Health Care,pfizer|pfe
+747525103,QCOM,Qualcomm Inc,Information Technology,qualcomm|qcom
+82846H405,QXO,Qxo Inc,Industrials,qxo
+75886F107,REGN,Regeneron Pharmaceuticals Inc,Health Care,regeneron pharmaceuticals|regn|regeneron
+G8267P108,SW,Smurfit Westrock Plc,Materials,smurfit westrock|smurfit
+G87052109,TEL,TE Connectivity PLC,Information Technology,te connectivity|tel|tyco electronics
+881624209,TEVA,Teva Pharmaceutical Industries,Health Care,teva pharmaceutical industries|teva
+883556102,TMO,Thermo Fisher Scientific Inc,Health Care,thermo fisher scientific|tmo|thermo fisher
+911312106,UPS,United Parcel Service Inc,Industrials,united parcel service|ups
+CASH,USD,US Dollars,Cash,
+92840M102,VST,Vistra Corp,Utilities,vistra|vst
+934423104,WBD,Warner Bros Discovery Inc,Communication Services,warner bros discovery|wbd|warner brothers discovery|warner bros|warner discovery
+949746101,WFC,Wells Fargo & Company,Financials,wells fargo and|wfc
+G96629103,WTW,Willis Towers Watson PLC,Financials,willis towers watson|wtw
+98956P102,ZBH,Zimmer Biomet Holdings Inc,Health Care,zimmer biomet|zbh|zimmer
