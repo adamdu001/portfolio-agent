@@ -1,22 +1,26 @@
 # Stonebridge Case Study -- Anbang Du
 At high level, my first principle for designing such system is to maximise determinism and minimise non-determinism so that the LLM is only used when it is really needed. In below proposed system, code does every calculation, comparison and verdict, and an LLM extracts claims from scripts with schema-enforced output containing traceable references. In the end the analyst will get traceable report of inconsistencies (between call scripts and holding) and flagged holding changes at stock and sector level. The workflow is illustrated in the flowchart below and explained in detail in the next section. The system code and outputs are in this [Github Repo](https://github.com/adamdu001/portfolio-agent). Please feel free to inspect and run it.
 
+![Workflow of the system](docs/workflow.png)
+
+<!-- Editable source: docs/workflow.mmd. Previous version:
 ```mermaid
 flowchart TD
-    H["Quarterly holdings files<br/>(3 quarters)"] --> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
-    A --> B["Detect changes per stock<br/>label each as <b>initiate</b>, <b>add</b>, <b>hold</b>, <b>trim</b> or <b>exit</b>;<br/>split weight change into <b>active</b> (trading) and <b>passive</b> (price drift);<br/>mark <b>material</b> changes:<br/>entry or exit, shares change 25% or more,<br/>or active weight change 0.5 points or more"]
-    A --> C["Measure portfolio shape<br/>stock and sector concentration (HHI);<br/>mark <b>sector tilts</b>:<br/>sector weight change 3 points or more"]
-    T["Manager call transcript"] --> X["Language model reads the text<br/>and lists each stock-specific action<br/>with a verbatim quote<br/>(the only non-deterministic step)"]
-    X --> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
-    V -->|fails| R["Rejected claims log"]
-    V -->|passes| M["Match company names<br/>to securities in the holdings"]
-    M --> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>, or <b>not in holdings</b>"]
-    B --> D
-    B --> F["Collect flags with their evidence<br/>and row references"]
-    C --> F
-    D --> F
-    F --> O["Write the report<br/>from templates, no model"]
+    H["Quarterly holdings files<br/>(3 quarters)"] - -> A["Clean and standardise<br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
+    A - -> B["Detect changes per stock<br/>label each as <b>initiate</b>, <b>add</b>, <b>hold</b>, <b>trim</b> or <b>exit</b>;<br/>split weight change into <b>active</b> (trading) and <b>passive</b> (price drift);<br/>mark <b>material</b> changes:<br/>entry or exit, shares change 25% or more,<br/>or active weight change 0.5 points or more"]
+    A - -> C["Measure portfolio shape<br/>stock and sector concentration (HHI);<br/>mark <b>sector tilts</b>:<br/>sector weight change 3 points or more"]
+    T["Manager call transcript"] - -> X["Language model reads the text<br/>and lists each stock-specific action<br/>with a verbatim quote<br/>(the only non-deterministic step)"]
+    X - -> V["Check the model's output<br/>quote must appear in the transcript;<br/>labels must be valid"]
+    V - ->|fails| R["Rejected claims log"]
+    V - ->|passes| M["Match company names<br/>to securities in the holdings"]
+    M - -> D["Compare each claim with the observed change, fixed rules<br/>verdict: <b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>, or <b>not in holdings</b>"]
+    B - -> D
+    B - -> F["Collect flags with their evidence<br/>and row references"]
+    C - -> F
+    D - -> F
+    F - -> O["Write the report<br/>from templates, no model"]
 ```
+-->
 
 # Data Model and Analytical Logics
 To give an overview of the data model: three base tables are linked on the CUSIP, with derived tables built on top. **Holdings** has one row per CUSIP, quarter and position, with shares, price, weight and the source row in the Excel file. The CUSIP is the key, zero-padded to nine characters, because the files lose leading zeros and tickers change. **Security reference** holds the CUSIP, ticker, name, a hand-assigned GICS sector and an aliases column of spoken name variants. **Claims** has one row per stock-specific action the manager states, with the verbatim quote, source_id, character offsets, paragraph numbers, action, quarter, multi_quarter and a short rationale. From holdings I derive **signals** (one row per CUSIP and pair of consecutive quarters, with the action, shares and weight before and after, active_w, passive_w, the streak, is_material and the source rows in both files), **portfolio summary** (one row per quarter, with concentration, top-10 weight and names in and out) and **sector weights** (one row per quarter and sector, with the change in points and is_tilt). **Signals** are the ground truth that **claims** are checked against: **claims** join to them through the CUSIP that the alias list resolves, and the result is saved as **claim checks**, with the verdict, reason and evidence rows.

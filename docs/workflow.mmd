@@ -1,0 +1,30 @@
+flowchart LR
+  subgraph HOLD["Holdings track (rule-based code)"]
+    direction TB
+    A["<b>1 Clean and standardise</b><br/>one row per stock per quarter,<br/>keyed on CUSIP, with sector"]
+    B["<b>2 Detect changes per stock</b><br/>label: <b>initiate</b>, <b>add</b>, <b>hold</b>,<br/><b>trim</b>, <b>exit</b>; split into <b>active</b><br/>and <b>passive</b>; mark <b>material</b><br/>(entry/exit, shares 25%+,<br/>active weight 0.5 pts+)"]
+    C["<b>3 Measure portfolio shape</b><br/>stock and sector HHI;<br/>mark <b>sector tilts</b> (3 pts+)"]
+    A --> B
+    A --> C
+  end
+  subgraph CALL["Call track"]
+    direction TB
+    X["<b>4 Language model reads text</b><br/>lists stock-specific actions<br/>with verbatim quotes<br/>(only non-deterministic step)"]
+    V["<b>5 Check model output</b><br/>quote in transcript;<br/>labels valid"]
+    R["Rejected claims log"]
+    M["<b>6 Match company names</b><br/>to securities held"]
+    X --> V
+    V -->|fails| R
+    V -->|passes| M
+  end
+  D["<b>7 Compare claims with changes</b><br/>fixed rules; verdict:<br/><b>consistent</b>, <b>contradicted</b>,<br/><b>partially supported</b>,<br/><b>not in holdings</b>"]
+  F["<b>8 Collect flags and write report</b><br/>templates, no model;<br/>every item has row references"]
+  H(["Holdings files<br/>(3 quarters)"]) --> A
+  T(["Call transcript"]) --> X
+  M --> D
+  B --> D
+  D --> F
+  B --> F
+  C --> F
+  classDef llm fill:#fde8c8,stroke:#c77700
+  class X llm
