@@ -49,14 +49,14 @@ Next I deal with claim extraction from the transcript. Due to its unstructured n
 | 6 | Match company names | `matching.py` | none (adds the CUSIP to each claim) |
 | 7 | Compare claims with changes | `verdicts.py` | `claim_checks.csv` |
 
-It is important that the analyst can read the final results with evidence. To this end, I gather the non-consistent claims, the material stock changes and the sector tilts into one JSON file (`flags.json`), then render a Markdown report from templates (`report.md`). Finally, I code an orchestration script (`run.py`) that can run step 1 to 8 in order so the report can be reproduced from the raw files in one go.
+It is important that the analyst can read the final results with evidence. To this end, I gather the non-consistent claims, the material stock changes and the sector tilts into one JSON file (`flags.json`), then render a Markdown report from templates (`report.md`). The report has three parts, matching the case objectives: claims that do not match the holdings, material stock changes, and sector flags (Health Care +6.98 points in Q1; sector HHI 1318, 1349, 1416). Finally, I code an orchestration script (`run.py`) that can run step 1 to 8 in order so the report can be reproduced from the raw files in one go.
 
 | # | Step | Script (`portfolio_agent/`) | Output (`data/processed/`) |
 |---|---|---|---|
 | 8 | Collect flags and write the report | `flags.py`, `render.py`, `report.py` | `flags.json`, `report.md` |
 | 9 | Run everything end to end | `run.py` | all of the above |
 
-
+The report (`report.md`, written by `python -m portfolio_agent.run` with a matching `flags.json`) 
 <!-- For each stock and quarter pair, `signals.py` classifies the action (initiate, add, hold, trim, exit) and splits the weight change. Weight at old shares and new prices is the unchanged weight. The gap to the new weight is active, and the gap from the old weight is passive. Initiates and exits have no such split. A change is material if it is an entry or exit, moves shares by 25% or more, or moves weight by 0.5 points or more through trading. A streak counts consecutive quarters in one direction. `portfolio.py` adds stock and sector concentration (HHI) and flags sectors that moved 3 points or more.
 
 Claims go through `verdicts.py`: consistent, contradicted, partially supported (direction right, streak shorter than the "few quarters" claimed, which I read as two) or not in holdings. A stock the manager names that is never held counts as a discrepancy. The model never judges whether a claim is true. -->
@@ -64,31 +64,35 @@ Claims go through `verdicts.py`: consistent, contradicted, partially supported (
 
 # Worked example
 
-**Worked example: "we added Qualcomm in January"**
+**Take this example: "we added Qualcomm in January"**
 
-*Input.* The raw inputs are the three Excel holdings files and the call excerpt. In the December file, Qualcomm (CUSIP `747525103`) is on row 32 with 16,495 shares at $171.05, a weight of 2.78%. In the March file it is on row 31 with 12,995 shares at $128.78, a weight of 1.70%. In the June file it is on row 32 with 13,975 shares at $184.79, a weight of 2.93%. The call says: "On the new side, we added Qualcomm in January."
+**Input.** The raw inputs are the three Excel holdings files and the call excerpt. In the December file, Qualcomm (CUSIP `747525103`) is on row 32 with 16,495 shares at $171.05, a weight of 2.78%. In the March file it is on row 31 with 12,995 shares at $128.78, a weight of 1.70%. In the June file it is on row 32 with 13,975 shares at $184.79, a weight of 2.93%. The call says: "On the new side, we added Qualcomm in January."
 
-*Step 1, clean and standardise (`load.py`, `reference.py`).* The three files become `holdings.csv`, with one row per stock per quarter, each carrying its `source_file` and `source_row`. `security_reference.csv` links the CUSIP to ticker `QCOM`, sector Information Technology and the aliases `qualcomm|qcom`.
+**Step 1. clean and standardise (`load.py`, `reference.py`).** The three files become `holdings.csv`, with one row per stock per quarter, each carrying its `source_file` and `source_row`. `security_reference.csv` links the CUSIP to ticker `QCOM`, sector Information Technology and the aliases `qualcomm|qcom`.
 
-*Step 2, detect changes (`signals.py`, output `signals.csv`).* For December to March, shares fell from 16,495 to 12,995 (-21.2%), so the action is `trim`. The weight fell by 1.08 points. If the manager had not traded, the lower price alone would have taken the weight to 2.13%, so `passive_w` is -0.65 and `active_w` is -0.43. The active move is under the 0.5-point threshold, so `is_material` is false. For March to June, shares rose by 980 (+7.5%), so the action is `add`, with `active_w` +0.62, which is material.
+**Step 2. detect changes (`signals.py`, output `signals.csv`).** For December to March, shares fell from 16,495 to 12,995 (-21.2%), so the action is `trim`. The weight fell by 1.08 points. If the manager had not traded, the lower price alone would have taken the weight to 2.13%, so `passive_w` is -0.65 and `active_w` is -0.43. The active move is under the 0.5-point threshold, so `is_material` is false. For March to June, shares rose by 980 (+7.5%), so the action is `add`, with `active_w` +0.62, which is material.
 
-*Steps 4 to 6, claims (`extract.py`, `claims.py`, `matching.py`).* The model extracts the claim: action `add`, quarter 2026Q1, with the verbatim quote. Code confirms the quote is in the transcript and records where it sits (paragraph 3, characters 416-462). The alias list resolves "Qualcomm" to `747525103`.
+**Steps 4-6. claims (`extract.py`, `claims.py`, `matching.py`).** The model extracts the claim: action `add`, quarter 2026Q1, with the verbatim quote. Code confirms the quote is in the transcript and records where it sits (paragraph 3, characters 416-462). The alias list resolves "Qualcomm" to `747525103`.
 
-*Step 7, verdict (`verdicts.py`, output `claim_checks.csv`).* The claim says add in 2026Q1. The December to March signal row says trim. The verdict is `contradicted`, and the reason is written from a template: "Manager says add; holdings show trim (2025Q4 to 2026Q1)." The evidence columns carry the shares, the active weight and source rows 32 and 31.
+**Step 7. verdict (`verdicts.py`, output `claim_checks.csv`).** The claim says add in 2026Q1. The December to March signal row says `trim`. The verdict is `contradicted`, and the reason is written from a template: "Manager says add; holdings show `trim` (2025Q4 to 2026Q1)." The evidence columns carry the shares, the active weight and source rows 32 and 31.
 
-*Output.* In `report.md`, under claims that do not match the holdings, the analyst sees the quote, its location, the verdict, the reason and the evidence. The agent does not say why they differ. One caveat belongs next to it: quarter-end snapshots cannot show activity inside the quarter, so buying in January followed by heavier selling would look the same. The June file shows a real add, which the analyst may want to ask about.
-
-The report (`report.md`, written by `python -m portfolio_agent.run` with a matching `flags.json`) has three parts, matching the case objectives: claims that do not match the holdings, material stock changes, and sector flags (Health Care +6.98 points in Q1; sector HHI 1318, 1349, 1416). In the same report, Boeing (initiate) and Warner Bros. Discovery (exit) are consistent, and Kraft Heinz is in no file at all.
+**Output.** In `report.md`, under claims that do not match the holdings, the analyst sees the quote, its location, the verdict, the reason and the evidence. 
 
 # Build priority
-
 First the deterministic holdings layer and its tests, since everything depends on correct keys and the active/passive split. Then claim extraction with validation. Then the report. The model comes last because its output is only useful once the checks around it exist.
 
-# Extending to richer sources
+# Discussion of next steps and limitation
 
+## Reliability of Extraction
+Prove the extraction is reliable. Run it many times on the transcript and measure how much the claims vary. Build a small set of labelled calls, including tricky wording, so missed actions can be counted. Missing actions are the failure we can't see today.
+
+## Richer Sources: more than one excerpt
 Only extraction changes. Recordings are transcribed, emails and notes read as text, each with a source id and date, and chunked. The same prompt runs per chunk and code adds source and location. Code merges claims on CUSIP and quarter and flags sources that disagree before checking holdings. Verdict rules stay the same.
 
-# Key question: where the agent can fail
+## threshold tuning
+The 25%, 0.5-point and 3-point values are my defaults. They should be set against what the analyst finds useful, and against more than three quarters of data so streaks can be longer than two.
+
+## stepwise limitation...
 
 By stage, with the design response:
 
@@ -99,3 +103,4 @@ By stage, with the design response:
 - **Verdicts and overstatement.** Contradicted means mismatch, not intent. Consistent means direction only, since size is not checked. Silence about 53 material changes is not evidence either way. Response: no model-written explanations, questions or recommendations; neutral templates.
 - **Plausible but wrong explanations.** My main worry, because a fluent summary hides the weak spots above. Response: the report text comes from templates filled with numbers from cited items, so no sentence exists without a source. If a model writes wording later, code should check that every cited id exists and every quoted number appears in that item.
 - **Traceability.** Claims and stocks trace to quote and row. Sector flags do not yet list member stocks. Response: join them from signals and reference.
+- The agent does not say why they differ. One caveat belongs next to it: quarter-end snapshots cannot show activity inside the quarter, so buying in January followed by heavier selling would look the same. The June file shows a real add, which the analyst may want to ask about.
